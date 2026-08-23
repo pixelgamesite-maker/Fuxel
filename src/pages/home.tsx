@@ -1,3 +1,4 @@
+import { useState } from "react";
 import FuxelMark from "@/components/FuxelMark";
 import WhitelistForm from "@/components/WhitelistForm";
 import { ACCENT, CHAIN, GALLERY, MINT_PRICE, OPENSEA_URL, PLATFORM, SUPPLY } from "@/lib/fuxel-constants";
@@ -16,6 +17,26 @@ const pageStyles = `
     0%, 100% { opacity: 1; }
     50%       { opacity: 0.3; }
   }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes modalIn {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  .modal-overlay { animation: fadeIn 0.2s ease both; }
+  .modal-card { animation: modalIn 0.25s cubic-bezier(0.16,1,0.3,1) both; }
+
+  .join-btn { transition: transform 0.2s, box-shadow 0.2s; }
+  .join-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(255,107,0,0.35);
+  }
+
+  .modal-close-btn { transition: background 0.2s; }
+  .modal-close-btn:hover { background: rgba(255,255,255,0.08) !important; }
 
   .gallery-tile { transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s; }
   .gallery-tile:hover {
@@ -130,6 +151,8 @@ function GallerySection() {
 
 // ── Main ─────────────────────────────────────────────────────────
 export default function Home() {
+  const [showModal, setShowModal] = useState(false);
+
   return (
     <div style={{ background: "#0D0D0D", minHeight: "100vh", color: "#fff", fontFamily: "'Space Grotesk', sans-serif" }}>
       <style>{pageStyles}</style>
@@ -160,18 +183,31 @@ export default function Home() {
         <h1 style={{ fontSize: "clamp(40px, 10vw, 64px)", fontWeight: 800, lineHeight: 1.05, color: "#fff", marginBottom: 16 }}>
           Secure your<br /><span style={{ color: ACCENT }}>whitelist spot.</span>
         </h1>
-        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.75, maxWidth: 360, margin: "0 auto" }}>
-          Complete the steps below. One per step — the next unlocks when you finish the last.
+        <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.75, maxWidth: 360, margin: "0 auto 32px" }}>
+          A few quick steps and your spot is locked in.
         </p>
+        <button
+          className="join-btn"
+          onClick={() => setShowModal(true)}
+          style={{
+            padding: "15px 40px",
+            background: ACCENT, borderRadius: 12,
+            border: "none", color: "#000",
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontWeight: 800, fontSize: 14,
+            letterSpacing: "0.06em", textTransform: "uppercase",
+            cursor: "pointer",
+            boxShadow: "0 4px 20px rgba(255,107,0,0.25)",
+          }}
+        >
+          Join Whitelist →
+        </button>
       </div>
 
       {/* Stats strip */}
       <div style={{ maxWidth: 520, margin: "0 auto", padding: "0 24px 48px" }}>
         <StatsStrip />
       </div>
-
-      {/* Whitelist form — fully separate component, see WhitelistForm.tsx */}
-      <WhitelistForm />
 
       {/* Gallery */}
       <GallerySection />
@@ -184,6 +220,57 @@ export default function Home() {
           </p>
         </div>
       </div>
+
+      {/* Whitelist modal — form itself lives in WhitelistForm.tsx */}
+      {showModal && (
+        <div
+          className="modal-overlay"
+          style={{
+            position: "fixed", inset: 0, zIndex: 100,
+            background: "rgba(0,0,0,0.75)", backdropFilter: "blur(8px)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            padding: 20, overflowY: "auto",
+          }}
+          onClick={e => { if (e.target === e.currentTarget) setShowModal(false); }}
+        >
+          <div className="modal-card" style={{
+            background: "#0D0D0D",
+            border: "1px solid rgba(255,255,255,0.08)",
+            borderRadius: 16,
+            width: "100%", maxWidth: 560,
+            maxHeight: "88vh", overflowY: "auto",
+            padding: "32px 24px 28px",
+            position: "relative",
+          }}>
+            <button
+              onClick={() => setShowModal(false)}
+              className="modal-close-btn"
+              aria-label="Close"
+              style={{
+                position: "absolute", top: 16, right: 16,
+                background: "transparent", border: "none",
+                color: "rgba(255,255,255,0.4)", fontSize: 20, cursor: "pointer",
+                width: 32, height: 32, borderRadius: 8,
+                display: "flex", alignItems: "center", justifyContent: "center",
+              }}
+            >
+              ✕
+            </button>
+
+            <div style={{ textAlign: "center", marginBottom: 28 }}>
+              <p style={{ fontSize: 11, fontWeight: 700, color: ACCENT, letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: 10 }}>
+                Whitelist Application
+              </p>
+              <h2 style={{ fontSize: 22, fontWeight: 800, color: "#fff", marginBottom: 6 }}>Join the Den</h2>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", lineHeight: 1.6 }}>
+                Complete each step below. The next unlocks when you finish the last.
+              </p>
+            </div>
+
+            <WhitelistForm onClose={() => setShowModal(false)} />
+          </div>
+        </div>
+      )}
     </div>
   );
 }
