@@ -25,10 +25,6 @@ const FAQS = [
     q: "How many spots are there?",
     a: "Spots are limited and given out on a first-come basis — the earlier you apply, the better your odds.",
   },
-  {
-    q: "I got an error saying my wallet or X username is already used — why?",
-    a: "Each wallet address and X username can only submit once. If you think this is a mistake, reach out to us on X.",
-  },
 ];
 
 const faqStyles = `
