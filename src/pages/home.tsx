@@ -118,7 +118,7 @@ export default function Home() {
           overflow: "hidden",
         }}>
           <img
-            src="/Fuxel-1.jpg"
+            src="/Fuxel-hero.jpg"
             alt="Fuxel"
             style={{ width: "100%", height: "100%", objectFit: "contain" }}
             onError={(e) => {
