@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
-import FuxelMark from "./FuxelMark";
-import { ACCENT, CHAIN, FOLLOW_URL, LS_KEY, POST_URL } from "../lib/fuxel-constants";
+import FuxelMark from "@/components/FuxelMark";
+import { ACCENT, CHAIN, FOLLOW_URL, LS_KEY, POST_URL } from "@/lib/fuxel-constants";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -145,11 +145,13 @@ function TaskHeader({ num, title, subtitle, done }: { num: string; title: string
 }
 
 // ── Success / already-submitted states ──────────────────────────────
-function SuccessScreen({ wallet, xUsername }: { wallet: string; xUsername: string }) {
+// No fixed/minHeight:100vh styling here — these render inside whatever
+// container hosts <WhitelistForm />, modal or full page alike.
+function SuccessScreen({ wallet, xUsername, onClose }: { wallet: string; xUsername: string; onClose?: () => void }) {
   return (
-    <div className="wl-fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0D0D0D", padding: 24, textAlign: "center" }}>
+    <div className="wl-fade-in" style={{ textAlign: "center", padding: "8px 4px" }}>
       <style>{formStyles}</style>
-      <div style={{ maxWidth: 400 }}>
+      <div style={{ maxWidth: 400, margin: "0 auto" }}>
         <div style={{ margin: "0 auto 24px" }}><FuxelMark size={56} /></div>
         <h2 style={{ fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 10 }}>You're on the list.</h2>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, marginBottom: 28 }}>
@@ -160,23 +162,49 @@ function SuccessScreen({ wallet, xUsername }: { wallet: string; xUsername: strin
           {wallet}
         </div>
         {xUsername && (
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)" }}>@{xUsername.replace(/^@/, "")}</div>
+          <div style={{ fontSize: 12, color: "rgba(255,255,255,0.2)", marginBottom: onClose ? 24 : 0 }}>@{xUsername.replace(/^@/, "")}</div>
+        )}
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              marginTop: 24, padding: "11px 28px",
+              background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 8, color: "rgba(255,255,255,0.6)",
+              fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            Close
+          </button>
         )}
       </div>
     </div>
   );
 }
 
-function AlreadySubmitted() {
+function AlreadySubmitted({ onClose }: { onClose?: () => void }) {
   return (
-    <div className="wl-fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0D0D0D", padding: 24, textAlign: "center" }}>
+    <div className="wl-fade-in" style={{ textAlign: "center", padding: "8px 4px" }}>
       <style>{formStyles}</style>
-      <div style={{ maxWidth: 360 }}>
+      <div style={{ maxWidth: 360, margin: "0 auto" }}>
         <div style={{ margin: "0 auto 24px" }}><FuxelMark size={56} /></div>
         <h2 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 10 }}>Already submitted.</h2>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.7 }}>
           You've already secured your whitelist spot. No need to submit again.
         </p>
+        {onClose && (
+          <button
+            onClick={onClose}
+            style={{
+              marginTop: 24, padding: "11px 28px",
+              background: "transparent", border: "1px solid rgba(255,255,255,0.15)",
+              borderRadius: 8, color: "rgba(255,255,255,0.6)",
+              fontFamily: "'Space Grotesk', sans-serif", fontWeight: 700, fontSize: 13, cursor: "pointer",
+            }}
+          >
+            Close
+          </button>
+        )}
       </div>
     </div>
   );
@@ -186,7 +214,7 @@ function AlreadySubmitted() {
 // Drop <WhitelistForm /> anywhere. It manages its own state, its own
 // submission gate (localStorage), and renders full-bleed success /
 // already-submitted screens when relevant — no props required.
-export default function WhitelistForm() {
+export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}) {
   const [alreadyDone] = useState(() => !!localStorage.getItem(LS_KEY));
 
   const [xUsername, setXUsername] = useState("");
@@ -261,8 +289,8 @@ export default function WhitelistForm() {
     }
   };
 
-  if (alreadyDone) return <AlreadySubmitted />;
-  if (submitted) return <SuccessScreen wallet={wallet} xUsername={xUsername} />;
+  if (alreadyDone) return <AlreadySubmitted onClose={onClose} />;
+  if (submitted) return <SuccessScreen wallet={wallet} xUsername={xUsername} onClose={onClose} />;
 
   return (
     <div className="wl-form" style={{ maxWidth: 520, margin: "0 auto", padding: "0 24px 80px", display: "flex", flexDirection: "column", gap: 10 }}>
