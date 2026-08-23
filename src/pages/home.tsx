@@ -9,7 +9,17 @@ const supabase = createClient(
 const ACCENT = "#FF6B00";
 const POST_URL = "https://x.com/FuxelFox/status/2065075398430322959";
 const FOLLOW_URL = "https://x.com/FuxelFox";
+const OPENSEA_URL = "https://opensea.io/collection/fuxel";
 const LS_KEY = "fuxel_submitted";
+
+// ── Collection facts (shown in the stats strip + footer) ─────────
+const SUPPLY = "1,500";
+const CHAIN = "Robinhood Chain";
+const MINT_PRICE = "TBA";
+const PLATFORM = "OpenSea";
+
+// ── Gallery images (public/Fuxel-1.jpg … Fuxel-8.jpg) ─────────────
+const GALLERY = Array.from({ length: 8 }, (_, i) => `/Fuxel-${i + 1}.jpg`);
 
 // ── Slide-in animation via injected keyframes ────────────────────
 const globalStyles = `
@@ -70,6 +80,29 @@ const globalStyles = `
   .task-btn:hover {
     background: rgba(255,107,0,0.15) !important;
     border-color: rgba(255,107,0,0.6) !important;
+  }
+
+  .gallery-tile {
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1), border-color 0.25s;
+  }
+  .gallery-tile:hover {
+    transform: translateY(-4px);
+    border-color: rgba(255,107,0,0.5) !important;
+  }
+
+  .stat-item {
+    transition: border-color 0.2s;
+  }
+  .stat-item:hover {
+    border-color: rgba(255,107,0,0.35) !important;
+  }
+
+  .opensea-btn {
+    transition: background 0.2s, border-color 0.2s;
+  }
+  .opensea-btn:hover {
+    background: rgba(255,107,0,0.1) !important;
+    border-color: rgba(255,107,0,0.5) !important;
   }
 `;
 
@@ -182,18 +215,132 @@ function TaskHeader({ num, title, subtitle, done }: { num: string; title: string
   );
 }
 
+// ── Fuxel mark (logo image with graceful fallback) ────────────────
+function FuxelMark({ size = 56 }: { size?: number }) {
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: size * 0.28,
+      background: "rgba(255,107,0,0.12)", border: "1px solid rgba(255,107,0,0.3)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      overflow: "hidden", flexShrink: 0,
+    }}>
+      <img
+        src="/Fuxel-logo.jpg"
+        alt="Fuxel"
+        style={{ width: "100%", height: "100%", objectFit: "cover" }}
+        onError={(e) => {
+          const el = e.target as HTMLImageElement;
+          el.style.display = "none";
+          const parent = el.parentElement;
+          if (parent) parent.innerHTML = `<span style="font-size:${size * 0.42}px">🦊</span>`;
+        }}
+      />
+    </div>
+  );
+}
+
+// ── Stats strip ───────────────────────────────────────────────────
+function StatsStrip() {
+  const stats = [
+    { label: "Supply", value: SUPPLY },
+    { label: "Chain", value: CHAIN },
+    { label: "Mint Price", value: MINT_PRICE },
+    { label: "Platform", value: PLATFORM },
+  ];
+  return (
+    <div style={{
+      display: "grid",
+      gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
+      gap: 10,
+      margin: "0 auto 8px",
+    }}>
+      {stats.map(s => (
+        <div key={s.label} className="stat-item" style={{
+          background: "#131313",
+          border: "1px solid rgba(255,255,255,0.07)",
+          borderRadius: 10,
+          padding: "14px 16px",
+          textAlign: "center",
+        }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: "#fff" }}>{s.value}</div>
+          <div style={{ fontSize: 10, color: "rgba(255,255,255,0.35)", letterSpacing: "0.1em", textTransform: "uppercase", marginTop: 4, fontWeight: 700 }}>{s.label}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ── Gallery ───────────────────────────────────────────────────────
+function GallerySection() {
+  return (
+    <div style={{ maxWidth: 640, margin: "0 auto", padding: "0 24px 72px" }}>
+      <div style={{ textAlign: "center", marginBottom: 28 }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: ACCENT, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 10 }}>
+          Preview
+        </p>
+        <h2 style={{ fontSize: "clamp(24px, 5vw, 32px)", fontWeight: 800, color: "#fff" }}>
+          Meet a few of the <span style={{ color: ACCENT }}>foxes.</span>
+        </h2>
+      </div>
+      <div style={{
+        display: "grid",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gap: 10,
+      }}>
+        {GALLERY.map((src, i) => (
+          <div key={src} className="gallery-tile" style={{
+            aspectRatio: "1",
+            borderRadius: 10,
+            overflow: "hidden",
+            border: "1px solid rgba(255,255,255,0.07)",
+            background: "#161616",
+          }}>
+            <img
+              src={src}
+              alt={`Fuxel #${i + 1}`}
+              style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }}
+              onError={(e) => { (e.target as HTMLImageElement).style.opacity = "0"; }}
+              loading="lazy"
+            />
+          </div>
+        ))}
+      </div>
+      <div style={{ textAlign: "center", marginTop: 24 }}>
+        <a
+          href={OPENSEA_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="opensea-btn"
+          style={{
+            display: "inline-block",
+            padding: "12px 28px",
+            background: "transparent",
+            border: "1px solid rgba(255,255,255,0.15)",
+            borderRadius: 10,
+            color: "#fff",
+            fontFamily: "'Space Grotesk', sans-serif",
+            fontWeight: 700, fontSize: 13,
+            letterSpacing: "0.04em",
+            textDecoration: "none",
+          }}
+        >
+          View on OpenSea →
+        </a>
+      </div>
+    </div>
+  );
+}
+
 // ── Success screen ───────────────────────────────────────────────
 function SuccessScreen({ wallet, xUsername }: { wallet: string; xUsername: string }) {
   return (
     <div className="fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0D0D0D", padding: 24, textAlign: "center" }}>
       <style>{globalStyles}</style>
       <div style={{ maxWidth: 400 }}>
-        <div style={{ width: 56, height: 56, borderRadius: 14, background: "rgba(255,107,0,0.12)", border: "1px solid rgba(255,107,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 24 }}>
-          🦊
-        </div>
+        <div style={{ margin: "0 auto 24px" }}><FuxelMark size={56} /></div>
         <h2 style={{ fontSize: 28, fontWeight: 800, color: "#fff", marginBottom: 10 }}>You're on the list.</h2>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.7, marginBottom: 28 }}>
-          Your spot is secured. We'll reach out when it's time to mint.
+          Your spot is secured. We'll reach out when it's time to mint on {CHAIN}.
         </p>
         <div style={{ background: "#161616", border: "1px solid rgba(255,255,255,0.07)", borderRadius: 10, padding: "14px 18px", fontSize: 12, color: "rgba(255,255,255,0.4)", wordBreak: "break-all", textAlign: "left", marginBottom: 10 }}>
           <span style={{ color: "rgba(255,255,255,0.2)", fontSize: 11, display: "block", marginBottom: 4 }}>WALLET</span>
@@ -213,9 +360,7 @@ function AlreadySubmitted() {
     <div className="fade-in" style={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "#0D0D0D", padding: 24, textAlign: "center" }}>
       <style>{globalStyles}</style>
       <div style={{ maxWidth: 360 }}>
-        <div style={{ width: 56, height: 56, borderRadius: 14, background: "rgba(255,107,0,0.12)", border: "1px solid rgba(255,107,0,0.3)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 24px", fontSize: 24 }}>
-          🦊
-        </div>
+        <div style={{ margin: "0 auto 24px" }}><FuxelMark size={56} /></div>
         <h2 style={{ fontSize: 24, fontWeight: 800, color: "#fff", marginBottom: 10 }}>Already submitted.</h2>
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.7 }}>
           You've already secured your whitelist spot. No need to submit again.
@@ -321,10 +466,13 @@ export default function Home() {
         position: "sticky", top: 0, zIndex: 50,
         background: "rgba(13,13,13,0.95)", backdropFilter: "blur(12px)",
         borderBottom: "1px solid rgba(255,255,255,0.06)",
-        padding: "0 24px", height: 56,
+        padding: "0 24px", height: 60,
         display: "flex", alignItems: "center", justifyContent: "space-between",
       }}>
-        <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.08em", color: "#fff" }}>FUXEL</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+          <FuxelMark size={30} />
+          <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "0.08em", color: "#fff" }}>FUXEL</span>
+        </div>
         <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 6px rgba(34,197,94,0.9)", display: "inline-block", animation: "pulse-dot 2s infinite" }} />
           <span style={{ fontSize: 11, color: "rgba(255,255,255,0.35)", letterSpacing: "0.06em", fontWeight: 600 }}>WHITELIST OPEN</span>
@@ -332,9 +480,9 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <div style={{ textAlign: "center", padding: "60px 24px 48px", maxWidth: 520, margin: "0 auto" }}>
+      <div style={{ textAlign: "center", padding: "60px 24px 40px", maxWidth: 520, margin: "0 auto" }}>
         <p style={{ fontSize: 12, fontWeight: 600, color: ACCENT, letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: 14 }}>
-          1,555 Foxes · Ethereum
+          {SUPPLY} Foxes · {CHAIN}
         </p>
         <h1 style={{ fontSize: "clamp(40px, 10vw, 64px)", fontWeight: 800, lineHeight: 1.05, color: "#fff", marginBottom: 16 }}>
           Secure your<br /><span style={{ color: ACCENT }}>whitelist spot.</span>
@@ -342,6 +490,11 @@ export default function Home() {
         <p style={{ fontSize: 14, color: "rgba(255,255,255,0.4)", lineHeight: 1.75, maxWidth: 360, margin: "0 auto" }}>
           Complete the steps below. One per step — the next unlocks when you finish the last.
         </p>
+      </div>
+
+      {/* Stats strip */}
+      <div style={{ maxWidth: 520, margin: "0 auto", padding: "0 24px 48px" }}>
+        <StatsStrip />
       </div>
 
       {/* Tasks */}
@@ -508,11 +661,16 @@ export default function Home() {
             </p>
           </div>
         )}
+      </div>
 
-        {/* Footer */}
-        <div style={{ textAlign: "center", paddingTop: 32, marginTop: 12, borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+      {/* Gallery */}
+      <GallerySection />
+
+      {/* Footer */}
+      <div style={{ textAlign: "center", paddingBottom: 48 }}>
+        <div style={{ maxWidth: 520, margin: "0 auto", padding: "32px 24px 0", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
           <p style={{ fontSize: 11, color: "rgba(255,255,255,0.15)", letterSpacing: "0.08em" }}>
-            FUXEL · 1,555 FOXES · ETHEREUM
+            FUXEL · {SUPPLY} FOXES · {CHAIN.toUpperCase()}
           </p>
         </div>
       </div>
