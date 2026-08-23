@@ -2,7 +2,7 @@
 export const ACCENT = "#FF6B00";
 
 // ── Collection facts (edit here — used across all components) ──────
-export const SUPPLY = "1,500";
+export const SUPPLY = "1,555";
 export const CHAIN = "Robinhood Chain";
 export const MINT_PRICE = "TBA";
 export const PLATFORM = "OpenSea";
