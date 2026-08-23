@@ -14,6 +14,7 @@ export const OPENSEA_URL: string | null = null;
 // ── Social / campaign links ─────────────────────────────────────────
 export const POST_URL = "https://x.com/FuxelFox/status/2065075398430322959";
 export const FOLLOW_URL = "https://x.com/FuxelFox";
+export const FOLLOW_HANDLE = "@FuxelFox";
 
 // ── Local storage key for "already submitted" gate ──────────────────
 export const LS_KEY = "fuxel_submitted";
