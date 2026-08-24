@@ -12,8 +12,8 @@ export const PLATFORM = "OpenSea";
 export const OPENSEA_URL: string | null = null;
 
 // ── Social / campaign links ─────────────────────────────────────────
-export const POST_URL = "https://x.com/FuxelFox/status/2065075398430322959";
-export const COMMENT_POST_URL = "https://x.com/FuxelFox/status/2091519860735930749";
+export const POST_URL = "https://x.com/FuxelFox/status/2091924978161590365";
+export const COMMENT_POST_URL = "https://x.com/FuxelFox/status/2091924978161590365";
 export const FOLLOW_URL = "https://x.com/FuxelFox";
 export const FOLLOW_HANDLE = "@FuxelFox";
 
