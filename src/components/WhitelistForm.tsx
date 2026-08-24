@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 import FuxelMark from "@/components/FuxelMark";
-import { ACCENT, CHAIN, FOLLOW_URL, LS_KEY, POST_URL } from "@/lib/fuxel-constants";
+import { ACCENT, CHAIN, COMMENT_POST_URL, FOLLOW_URL, LS_KEY, POST_URL } from "@/lib/fuxel-constants";
 
 const supabase = createClient(
   import.meta.env.VITE_SUPABASE_URL,
@@ -219,7 +219,6 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
 
   const [xUsername, setXUsername] = useState("");
   const [quoteLink, setQuoteLink] = useState("");
-  const [commentText, setCommentText] = useState("");
   const [commentLink, setCommentLink] = useState("");
   const [wallet, setWallet] = useState("");
 
@@ -231,7 +230,6 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
-  const [commentModalOpen, setCommentModalOpen] = useState(false);
 
   const step1Visible = true;
   const step2Visible = usernameLocked;
@@ -250,7 +248,7 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
     if (!followDone) e.follow = "Follow @FuxelFox first.";
     if (!likeQuoteDone) e.likeQuote = "Like and retweet the post first.";
     if (!quoteLink.trim()) e.quoteLink = "Paste your retweet/quote link.";
-    if (!commentDone) e.comment = "Submit a comment first.";
+    if (!commentDone) e.comment = "Comment on the post first.";
     if (!commentLink.trim()) e.commentLink = "Paste your comment link.";
     if (!wallet.trim()) e.wallet = "Enter your EVM wallet address.";
     else if (!/^0x[a-fA-F0-9]{40}$/.test(wallet.trim())) e.wallet = "Invalid address — must be 0x + 40 hex chars.";
@@ -388,7 +386,7 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
             <>
               <button
                 className="wl-task-btn"
-                onClick={() => setCommentModalOpen(true)}
+                onClick={() => openAndMark(COMMENT_POST_URL, () => setCommentDone(true))}
                 style={{
                   width: "100%", padding: "11px 0", marginBottom: 12,
                   background: "rgba(255,107,0,0.08)",
@@ -399,9 +397,15 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
                   letterSpacing: "0.04em",
                 }}
               >
-                Write your comment →
+                View Post →
               </button>
-              {errors.comment && <p style={{ color: "#ef4444", fontSize: 12 }}>{errors.comment}</p>}
+              <Field
+                label="Paste your comment link"
+                value={commentLink}
+                onChange={v => { setCommentLink(v); setErrors(e => ({ ...e, commentLink: "" })); }}
+                placeholder="https://x.com/..."
+                error={errors.commentLink}
+              />
             </>
           ) : (
             <Field
@@ -458,105 +462,6 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
         </div>
       )}
 
-      {/* Comment modal */}
-      {commentModalOpen && (
-        <div
-          className="wl-fade-in"
-          style={{
-            position: "fixed", inset: 0, zIndex: 100,
-            background: "rgba(0,0,0,0.75)", backdropFilter: "blur(6px)",
-            display: "flex", alignItems: "center", justifyContent: "center",
-            padding: 24,
-          }}
-          onClick={e => { if (e.target === e.currentTarget) setCommentModalOpen(false); }}
-        >
-          <div style={{
-            background: "#181818", borderRadius: 14,
-            border: "1px solid rgba(255,255,255,0.08)",
-            padding: "28px 24px", width: "100%", maxWidth: 440,
-            animation: "slideDown 0.3s cubic-bezier(0.4,0,0.2,1)",
-          }}>
-            <h3 style={{ fontSize: 16, fontWeight: 700, marginBottom: 6 }}>Comment on the post</h3>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.4)", marginBottom: 20, lineHeight: 1.6 }}>
-              Write your comment, then go post it on X — make sure to tag 2 frens.
-            </p>
-
-            <div style={{ marginBottom: 14 }}>
-              <Field
-                label="Your comment"
-                value={commentText}
-                onChange={setCommentText}
-                placeholder="Excited for Fuxel! @fren1 @fren2"
-                as="textarea"
-                rows={3}
-              />
-            </div>
-
-            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-              <button
-                onClick={() => {
-                  const text = encodeURIComponent(commentText || "Excited for Fuxel!");
-                  window.open(`https://x.com/intent/tweet?in_reply_to=2061551157785542955&text=${text}`, "_blank", "noopener,noreferrer");
-                }}
-                style={{
-                  flex: 1, padding: "11px 0",
-                  background: "rgba(255,107,0,0.1)",
-                  border: "1px solid rgba(255,107,0,0.35)",
-                  borderRadius: 8, color: ACCENT,
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 700, fontSize: 13, cursor: "pointer",
-                }}
-              >
-                Post on X →
-              </button>
-            </div>
-
-            <Field
-              label="Paste your comment link after posting"
-              value={commentLink}
-              onChange={v => { setCommentLink(v); setErrors(e => ({ ...e, commentLink: "" })); }}
-              placeholder="https://x.com/..."
-              error={errors.commentLink}
-            />
-
-            <div style={{ display: "flex", gap: 8, marginTop: 16 }}>
-              <button
-                onClick={() => setCommentModalOpen(false)}
-                style={{
-                  flex: 1, padding: "11px 0",
-                  background: "transparent",
-                  border: "1px solid rgba(255,255,255,0.1)",
-                  borderRadius: 8, color: "rgba(255,255,255,0.4)",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 600, fontSize: 13, cursor: "pointer",
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  if (!commentLink.trim()) {
-                    setErrors(e => ({ ...e, commentLink: "Paste your comment link first." }));
-                    return;
-                  }
-                  setCommentDone(true);
-                  setCommentModalOpen(false);
-                }}
-                style={{
-                  flex: 2, padding: "11px 0",
-                  background: ACCENT,
-                  border: "none",
-                  borderRadius: 8, color: "#000",
-                  fontFamily: "'Space Grotesk', sans-serif",
-                  fontWeight: 800, fontSize: 13, cursor: "pointer",
-                }}
-              >
-                Confirm Comment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
