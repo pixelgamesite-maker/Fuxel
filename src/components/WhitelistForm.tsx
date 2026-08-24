@@ -340,7 +340,7 @@ export default function WhitelistForm({ onClose }: { onClose?: () => void } = {}
       {/* Step 3 — Like & Retweet */}
       {step3Visible && (
         <TaskCard delay={60}>
-          <TaskHeader num="03" title="Like & Retweet" subtitle="Like and retweet the pinned post" done={likeQuoteDone} />
+          <TaskHeader num="03" title="Like & Quote" subtitle="Like and retweet the pinned post" done={likeQuoteDone} />
           {!likeQuoteDone ? (
             <>
               <button
